@@ -16,18 +16,3 @@ def create_html_file(file_name, batch_name, contents):
     with open(file_name, 'w') as fp:
         fp.write(file_content.replace('tbody_content', tbody).replace('batch_name', batch_name))
         
-import json
-from datetime import datetime, timedelta
-
-def load_premium_users():
-    try:
-        with open("premium_users.json", "r") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def save_premium_users(data):
-    with open("premium_users.json", "w") as f:
-        json.dump(data, f)
-
-      
