@@ -39,18 +39,6 @@ THREADPOOL = ThreadPoolExecutor(max_workers=1000)
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# main.py ke start me import ke neeche ya helper functions ke baad ye daalo:
-def is_premium(user_id):
-    users = load_premium_users()
-    expiry = users.get(str(user_id))
-
-    if expiry:
-        today = datetime.now().date()
-        expiry_date = datetime.strptime(expiry, "%Y-%m-%d").date()
-        return today <= expiry_date
-    return False
-
-
 # Bot credentials from environment variables (Render compatible)
 API_ID = int(os.environ.get("API_ID", 0))
 API_HASH = os.environ.get("API_HASH", "")
@@ -128,39 +116,6 @@ async def fetch_pwwp_data(session: aiohttp.ClientSession, url: str, headers: Dic
         else:
             logging.error(f"Failed to fetch {url} after {max_retries} attempts.")
             return None
-
-@bot.on_message(filters.command("addpremium") & filters.user(YOUR_ADMIN_ID))
-async def add_premium_user(bot, message):
-    try:
-        _, user_id, days = message.text.split()
-        user_id = int(user_id)
-        days = int(days)
-
-        users = load_premium_users()
-        expiry_date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
-        users[str(user_id)] = expiry_date
-        save_premium_users(users)
-
-        await message.reply_text(f"✅ User `{user_id}` added with access till {expiry_date}")
-    except:
-        await message.reply_text("❌ Use format: /addpremium <user_id> <days>")
-
-@bot.on_message(filters.command("removepremium") & filters.user(YOUR_ADMIN_ID))
-async def remove_premium_user(bot, message):
-    try:
-        _, user_id = message.text.split()
-        user_id = int(user_id)
-
-        users = load_premium_users()
-        if str(user_id) in users:
-            users.pop(str(user_id))
-            save_premium_users(users)
-            await message.reply_text(f"❌ User `{user_id}` removed from premium access.")
-        else:
-            await message.reply_text("⚠️ User not found.")
-    except:
-        await message.reply_text("❌ Use format: /removepremium <user_id>")
-
 
 async def process_pwwp_chapter_content(session: aiohttp.ClientSession, chapter_id, selected_batch_id, subject_id, schedule_id, content_type, headers: Dict):
     url = f"https://api.penpencil.co/v1/batches/{selected_batch_id}/subject/{subject_id}/schedule/{schedule_id}/schedule-details"
